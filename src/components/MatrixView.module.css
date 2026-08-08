@@ -1,0 +1,259 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: capitalize;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dotC1 {
+  background: var(--urgent);
+  box-shadow: 0 0 0 2px var(--urgent-soft);
+}
+
+.dotC2 {
+  background: var(--important);
+  box-shadow: 0 0 0 2px var(--important-soft);
+}
+
+.dotC3 {
+  background: var(--amber);
+}
+
+.dotC4 {
+  background: var(--steel);
+}
+
+.legendCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--steel);
+}
+
+/* ── El elemento firma: un plano cartesiano para el día ────────── */
+.field {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  min-height: 460px;
+}
+
+.axisX {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 3;
+  background: linear-gradient(
+    to right,
+    transparent 2%,
+    rgb(30 41 54 / 0.55) 6%,
+    rgb(30 41 54 / 0.55) 94%,
+    transparent 98%
+  );
+}
+
+.axisY {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  z-index: 3;
+  background: linear-gradient(
+    to bottom,
+    transparent 2%,
+    rgb(30 41 54 / 0.55) 6%,
+    rgb(30 41 54 / 0.55) 94%,
+    transparent 98%
+  );
+}
+
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translate(-50%, -50%);
+  z-index: 4;
+}
+
+.axisLabelX {
+  position: absolute;
+  left: 22px;
+  top: calc(50% + 12px);
+  z-index: 4;
+  color: var(--steel);
+}
+
+.axisLabelY {
+  position: absolute;
+  top: 16px;
+  left: calc(50% + 12px);
+  z-index: 4;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: var(--steel);
+}
+
+.quad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 18px 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.quadC1 {
+  background: linear-gradient(160deg, rgb(226 85 43 / 0.06), transparent 55%);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.quadC2 {
+  background: linear-gradient(200deg, rgb(21 121 111 / 0.06), transparent 55%);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.quadC3 {
+  background: linear-gradient(20deg, rgb(165 106 11 / 0.05), transparent 55%);
+  border-right: 1px solid var(--hairline);
+}
+
+.quadC4 {
+  background: transparent;
+}
+
+.quadHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.quadCode {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+}
+
+.quadName {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+
+.quickAdd {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--steel);
+  border-radius: var(--radius);
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.quad:hover .quickAdd {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .quickAdd {
+    opacity: 1;
+  }
+}
+
+.quickAdd:hover {
+  color: var(--ink);
+  border-color: var(--steel);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.empty {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--steel);
+  opacity: 0.7;
+}
+
+@media (max-width: 680px) {
+  .field {
+    min-height: 560px;
+  }
+
+  .quad {
+    padding: 12px 10px;
+  }
+
+  .quadName {
+    display: none;
+  }
+
+  .axisLabelX {
+    left: 10px;
+  }
+}
