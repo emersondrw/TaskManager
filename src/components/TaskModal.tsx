@@ -95,6 +95,15 @@ export function TaskModal({
 
   const quadrant = useMemo(() => quadrantOf({ urgent, important }), [urgent, important]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const isSubtask = Boolean(subtaskContext);

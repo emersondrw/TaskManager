@@ -1,11 +1,12 @@
 .card {
   position: relative;
   display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-1);
-  padding: 10px 12px 10px 14px;
+  padding: 10px 12px;
   cursor: grab;
   overflow: hidden;
   transition:
@@ -59,15 +60,39 @@
 .title {
   font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 550;
+  font-weight: 600;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 .titleDone {
-  text-decoration: line-through;
   color: var(--steel);
+  text-decoration: line-through;
   font-weight: 450;
+}
+
+/* Tono del título por cuadrante Eisenhower (colorido, tipo Jira) */
+.toneC1 {
+  color: var(--urgent-ink);
+}
+
+.toneC2 {
+  color: var(--important-ink);
+}
+
+.toneC3 {
+  color: var(--amber);
+}
+
+.toneC4 {
+  color: var(--ink-soft);
+}
+
+/* Los colores "hecho" deben ganar al tono */
+.titleDone,
+.subtaskTitleDone {
+  color: var(--steel);
+  text-decoration: line-through;
 }
 
 .meta {
@@ -94,30 +119,68 @@
   flex-wrap: wrap;
 }
 
-.subtaskList {
+.entity {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: 0.01em;
+}
+
+.time,
+.subtasks {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── Subtareas como tarjetas hijas separadas ───────────────────── */
+.subtaskGroup {
   list-style: none;
-  margin: 2px 0 0;
-  padding: 6px 0 0;
+  margin: 8px 0 0;
+  padding: 8px 0 0 14px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   border-top: 1px dashed var(--hairline);
+  position: relative;
 }
 
-.subtaskItem {
+.subtaskGroup::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.subtaskCard {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 7px 8px 7px 12px;
   min-width: 0;
-}
-
-.subtaskLabel {
-  display: flex;
-  align-items: center;
-  gap: 7px;
   cursor: pointer;
-  min-width: 0;
-  flex: 0 1 auto;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.subtaskCard:hover {
+  border-color: #c9d2db;
+  background: var(--surface);
+}
+
+.subtaskCheck {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .subtaskCheckbox {
@@ -125,38 +188,31 @@
   height: 13px;
   margin: 0;
   accent-color: var(--important);
-  flex-shrink: 0;
+}
+
+.subtaskBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
 }
 
 .subtaskTitle {
   font-size: 12.5px;
+  font-weight: 550;
   line-height: 1.4;
   overflow-wrap: anywhere;
-  color: var(--ink-soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.subtaskTitleDone {
-  font-size: 12.5px;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  color: var(--steel);
-  text-decoration: line-through;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .subtaskMeta {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--steel);
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
 }
 
 .subtaskEdit {
@@ -171,12 +227,11 @@
   color: var(--steel);
   border-radius: var(--radius);
   flex-shrink: 0;
-  margin-left: auto;
   opacity: 0;
   transition: opacity 0.15s ease;
 }
 
-.card:hover .subtaskEdit {
+.subtaskCard:hover .subtaskEdit {
   opacity: 1;
 }
 
@@ -188,19 +243,5 @@
 
 .subtaskEdit:hover {
   color: var(--ink);
-  background: var(--paper);
-}
-
-.entity {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--amber);
-  letter-spacing: 0.01em;
-}
-
-.time,
-.subtasks {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+  background: var(--surface);
 }

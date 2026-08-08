@@ -18,6 +18,72 @@ function notchClass(task: Task): string {
   return styles.notchNone;
 }
 
+function toneClass(task: Task): string {
+  if (task.urgent && task.important) return styles.toneC1;
+  if (task.urgent) return styles.toneC3;
+  if (task.important) return styles.toneC2;
+  return styles.toneC4;
+}
+
+function SubtaskCard({
+  task,
+  subtask,
+  onToggleSubtask,
+  onEditSubtask,
+}: {
+  task: Task;
+  subtask: Subtask;
+  onToggleSubtask?: (task: Task, subtaskId: string) => void;
+  onEditSubtask?: (task: Task, subtask: Subtask) => void;
+}) {
+  return (
+    <li
+      className={styles.subtaskCard}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEditSubtask?.(task, subtask);
+      }}
+    >
+      <span className={`${styles.notch} ${notchClass(task)}`} aria-hidden="true" />
+      <label className={styles.subtaskCheck} onClick={(e) => e.stopPropagation()}>
+        <input
+          type="checkbox"
+          className={styles.subtaskCheckbox}
+          checked={subtask.completed}
+          onChange={() => onToggleSubtask?.(task, subtask.id)}
+        />
+      </label>
+      <div className={styles.subtaskBody}>
+        <span
+          className={`${styles.subtaskTitle} ${toneClass(task)} ${
+            subtask.completed ? styles.subtaskTitleDone : ''
+          }`}
+        >
+          {subtask.title}
+        </span>
+        {subtask.assignee || subtask.targetDate ? (
+          <span className={styles.subtaskMeta}>
+            {[subtask.assignee, subtask.targetDate ? formatShort(subtask.targetDate) : '']
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className={styles.subtaskEdit}
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditSubtask?.(task, subtask);
+        }}
+        aria-label={`Editar subtarea: ${subtask.title}`}
+      >
+        <Pencil size={11} strokeWidth={2} />
+      </button>
+    </li>
+  );
+}
+
 export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props) {
   const handleDragStart = (e: DragEvent<HTMLElement>) => {
     e.dataTransfer.setData('text/plain', task.id ?? '');
@@ -36,52 +102,15 @@ export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props
     >
       <span className={`${styles.notch} ${notchClass(task)}`} aria-hidden="true" />
       <div className={styles.body}>
-        <h4 className={task.status === 'done' ? `${styles.title} ${styles.titleDone}` : styles.title}>
+        <h4
+          className={`${styles.title} ${toneClass(task)} ${
+            task.status === 'done' ? styles.titleDone : ''
+          }`}
+        >
           {task.title}
         </h4>
         {task.description ? (
           <p className={`${styles.meta} ${styles.desc}`}>{task.description}</p>
-        ) : null}
-
-        {task.subtasks.length > 0 ? (
-          <ul className={styles.subtaskList}>
-            {task.subtasks.map((s) => (
-              <li key={s.id} className={styles.subtaskItem}>
-                <label
-                  className={styles.subtaskLabel}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <input
-                    type="checkbox"
-                    className={styles.subtaskCheckbox}
-                    checked={s.completed}
-                    onChange={() => onToggleSubtask?.(task, s.id)}
-                  />
-                  <span className={s.completed ? styles.subtaskTitleDone : styles.subtaskTitle}>
-                    {s.title}
-                  </span>
-                </label>
-                {s.assignee || s.targetDate ? (
-                  <span className={styles.subtaskMeta}>
-                    {[s.assignee, s.targetDate ? formatShort(s.targetDate) : '']
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  className={styles.subtaskEdit}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditSubtask?.(task, s);
-                  }}
-                  aria-label={`Editar subtarea: ${s.title}`}
-                >
-                  <Pencil size={11} strokeWidth={2} />
-                </button>
-              </li>
-            ))}
-          </ul>
         ) : null}
 
         <div className={styles.footer}>
@@ -99,6 +128,20 @@ export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props
           ) : null}
         </div>
       </div>
+
+      {task.subtasks.length > 0 ? (
+        <ul className={styles.subtaskGroup} onClick={(e) => e.stopPropagation()}>
+          {task.subtasks.map((s) => (
+            <SubtaskCard
+              key={s.id}
+              task={task}
+              subtask={s}
+              onToggleSubtask={onToggleSubtask}
+              onEditSubtask={onEditSubtask}
+            />
+          ))}
+        </ul>
+      ) : null}
     </article>
   );
 }

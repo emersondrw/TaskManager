@@ -22,6 +22,15 @@ export function MorningReviewModal({ open, overdue, onClose, onReschedule, onCom
     setSelected(new Set(overdue.map((t) => t.id ?? '')));
   }, [open, overdue]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   const overdueIds = useMemo(() => overdue.map((t) => t.id ?? ''), [overdue]);
   const selectedIds = useMemo(
     () => overdueIds.filter((id) => selected.has(id)),
