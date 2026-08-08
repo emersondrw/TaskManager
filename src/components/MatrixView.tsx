@@ -81,6 +81,7 @@ export function MatrixView({ tasks, onEdit, onToggleSubtask, onEditSubtask, onQu
                       onEdit={onEdit}
                       onToggleSubtask={onToggleSubtask}
                       onEditSubtask={onEditSubtask}
+                      showSubtasks={false}
                     />
                   ))
                 ) : (

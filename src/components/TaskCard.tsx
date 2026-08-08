@@ -9,6 +9,7 @@ interface Props {
   onEdit: (task: Task) => void;
   onToggleSubtask?: (task: Task, subtaskId: string) => void;
   onEditSubtask?: (task: Task, subtask: Subtask) => void;
+  showSubtasks?: boolean;
 }
 
 function notchClass(task: Task): string {
@@ -84,7 +85,7 @@ function SubtaskCard({
   );
 }
 
-export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props) {
+export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask, showSubtasks = true }: Props) {
   const handleDragStart = (e: DragEvent<HTMLElement>) => {
     e.dataTransfer.setData('text/plain', task.id ?? '');
     e.dataTransfer.effectAllowed = 'move';
@@ -129,7 +130,7 @@ export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props
         </div>
       </div>
 
-      {task.subtasks.length > 0 ? (
+      {showSubtasks && task.subtasks.length > 0 ? (
         <ul className={styles.subtaskGroup} onClick={(e) => e.stopPropagation()}>
           {task.subtasks.map((s) => (
             <SubtaskCard

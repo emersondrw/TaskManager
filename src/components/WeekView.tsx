@@ -131,6 +131,7 @@ export function WeekView({
                     onEdit={onEdit}
                     onToggleSubtask={onToggleSubtask}
                     onEditSubtask={onEditSubtask}
+                    showSubtasks={false}
                   />
                 ))}
               </div>

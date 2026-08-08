@@ -28,6 +28,7 @@ export function KanbanView({
   onQuickAdd,
 }: Props) {
   const [over, setOver] = useState<KanbanStatus | null>(null);
+  const [showSubtasks, setShowSubtasks] = useState(true);
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, status: KanbanStatus) => {
     e.preventDefault();
@@ -38,6 +39,23 @@ export function KanbanView({
 
   return (
     <section className={styles.wrap} aria-label="Tablero de trabajo">
+      <header className={styles.head}>
+        <div>
+          <p className="eyebrow">Tablero de trabajo</p>
+          <h2 className={styles.title}>Flujo por estado</h2>
+        </div>
+        <button
+          type="button"
+          className={styles.toggle}
+          onClick={() => setShowSubtasks((v) => !v)}
+          aria-pressed={showSubtasks}
+        >
+          <span className={styles.toggleTrack}>
+            <span className={showSubtasks ? styles.toggleKnobOn : styles.toggleKnob} />
+          </span>
+          <span className="eyebrow">{showSubtasks ? 'Con subtareas' : 'Solo tareas'}</span>
+        </button>
+      </header>
       <div className={styles.board}>
         {COLUMNS.map((col) => {
           const list = tasks.filter((t) => t.status === col.status);
@@ -76,6 +94,7 @@ export function KanbanView({
                       onEdit={onEdit}
                       onToggleSubtask={onToggleSubtask}
                       onEditSubtask={onEditSubtask}
+                      showSubtasks={showSubtasks}
                     />
                   ))
                 ) : (
