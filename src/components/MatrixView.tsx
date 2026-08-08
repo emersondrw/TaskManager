@@ -8,6 +8,7 @@ import styles from './MatrixView.module.css';
 interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtaskId: string) => void;
   onQuickAdd: (urgent: boolean, important: boolean) => void;
 }
 
@@ -18,7 +19,7 @@ const QUADRANTS: { key: Quadrant; urgent: boolean; important: boolean }[] = [
   { key: 'C4', urgent: false, important: false },
 ];
 
-export function MatrixView({ tasks, onEdit, onQuickAdd }: Props) {
+export function MatrixView({ tasks, onEdit, onToggleSubtask, onQuickAdd }: Props) {
   const today = todayStr();
   const todayTasks = tasks.filter((t) => t.targetDate === today);
 
@@ -72,7 +73,14 @@ export function MatrixView({ tasks, onEdit, onQuickAdd }: Props) {
               </div>
               <div className={styles.cards}>
                 {list.length > 0 ? (
-                  list.map((t) => <TaskCard key={t.id} task={t} onEdit={onEdit} />)
+                  list.map((t) => (
+                    <TaskCard
+                      key={t.id}
+                      task={t}
+                      onEdit={onEdit}
+                      onToggleSubtask={onToggleSubtask}
+                    />
+                  ))
                 ) : (
                   <p className={styles.empty}>Sin tareas.</p>
                 )}

@@ -37,9 +37,9 @@ export function startOfWeek(dateStr: string): string {
   return addDays(dateStr, -day);
 }
 
-/** Últimos `count` días terminando en `end`. */
-export function lastDays(end: string, count: number): string[] {
-  return Array.from({ length: count }, (_, i) => addDays(end, i - (count - 1)));
+/** Los 7 días de la semana que comienza en `start` (lunes → domingo). */
+export function weekDays(start: string): string[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
 
 export function isPast(dateStr: string, ref?: string): boolean {

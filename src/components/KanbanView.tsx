@@ -7,6 +7,7 @@ import styles from './KanbanView.module.css';
 interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtaskId: string) => void;
   onMoveToStatus: (taskId: string, status: KanbanStatus) => void;
   onQuickAdd: (status: KanbanStatus) => void;
 }
@@ -17,7 +18,7 @@ const COLUMNS: { status: KanbanStatus; label: string }[] = [
   { status: 'done', label: 'Hecho' },
 ];
 
-export function KanbanView({ tasks, onEdit, onMoveToStatus, onQuickAdd }: Props) {
+export function KanbanView({ tasks, onEdit, onToggleSubtask, onMoveToStatus, onQuickAdd }: Props) {
   const [over, setOver] = useState<KanbanStatus | null>(null);
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, status: KanbanStatus) => {
@@ -60,7 +61,14 @@ export function KanbanView({ tasks, onEdit, onMoveToStatus, onQuickAdd }: Props)
               </div>
               <div className={styles.cards}>
                 {list.length > 0 ? (
-                  list.map((t) => <TaskCard key={t.id} task={t} onEdit={onEdit} />)
+                  list.map((t) => (
+                    <TaskCard
+                      key={t.id}
+                      task={t}
+                      onEdit={onEdit}
+                      onToggleSubtask={onToggleSubtask}
+                    />
+                  ))
                 ) : (
                   <p className={styles.empty}>Suelta una tarea aquí.</p>
                 )}

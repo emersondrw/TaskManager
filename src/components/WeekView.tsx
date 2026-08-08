@@ -1,29 +1,36 @@
 import { useState, type DragEvent } from 'react';
-import { Plus } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import type { Task } from '../types/task';
 import { TaskCard } from './TaskCard';
 import {
+  addDays,
   dayNumber,
+  formatShort,
   isWeekend,
   isSameDay,
-  lastDays,
   startOfWeek,
   todayStr,
   weekdayLabel,
+  weekDays,
 } from '../utils/dateUtils';
 import styles from './WeekView.module.css';
 
 interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtaskId: string) => void;
   onMoveToDay: (taskId: string, dateStr: string) => void;
   onQuickAdd: (dateStr: string) => void;
 }
 
-export function WeekView({ tasks, onEdit, onMoveToDay, onQuickAdd }: Props) {
+export function WeekView({ tasks, onEdit, onToggleSubtask, onMoveToDay, onQuickAdd }: Props) {
   const today = todayStr();
-  const days = lastDays(startOfWeek(today), 7);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [over, setOver] = useState<string | null>(null);
+
+  const anchor = addDays(today, weekOffset * 7);
+  const weekStart = startOfWeek(anchor);
+  const days = weekDays(weekStart);
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, dateStr: string) => {
     e.preventDefault();
@@ -34,6 +41,45 @@ export function WeekView({ tasks, onEdit, onMoveToDay, onQuickAdd }: Props) {
 
   return (
     <section className={styles.wrap} aria-label="Vista semanal">
+      <header className={styles.head}>
+        <div>
+          <p className="eyebrow">Vista semanal</p>
+          <h2 className={styles.title}>
+            {formatShort(weekStart)} — {formatShort(addDays(weekStart, 6))}
+          </h2>
+        </div>
+        <div className={styles.nav}>
+          <button
+            type="button"
+            className={styles.navBtn}
+            onClick={() => setWeekOffset((o) => o - 1)}
+            aria-label="Semana anterior"
+          >
+            <ChevronLeft size={16} strokeWidth={2} />
+          </button>
+          {weekOffset !== 0 ? (
+            <button
+              type="button"
+              className={styles.todayBtn}
+              onClick={() => setWeekOffset(0)}
+            >
+              <CalendarDays size={14} strokeWidth={2} />
+              Esta semana
+            </button>
+          ) : (
+            <span className={styles.todayTag}>Esta semana</span>
+          )}
+          <button
+            type="button"
+            className={styles.navBtn}
+            onClick={() => setWeekOffset((o) => o + 1)}
+            aria-label="Semana siguiente"
+          >
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
+        </div>
+      </header>
+
       <div className={styles.board}>
         {days.map((day) => {
           const list = tasks.filter((t) => t.targetDate === day);
@@ -71,7 +117,12 @@ export function WeekView({ tasks, onEdit, onMoveToDay, onQuickAdd }: Props) {
               </div>
               <div className={styles.cards}>
                 {list.map((t) => (
-                  <TaskCard key={t.id} task={t} onEdit={onEdit} />
+                  <TaskCard
+                    key={t.id}
+                    task={t}
+                    onEdit={onEdit}
+                    onToggleSubtask={onToggleSubtask}
+                  />
                 ))}
               </div>
             </div>

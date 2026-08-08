@@ -1,5 +1,5 @@
 import type { DragEvent } from 'react';
-import { CheckSquare, Timer } from 'lucide-react';
+import { Timer } from 'lucide-react';
 import type { Task } from '../types/task';
 import { formatTime } from '../utils/dateUtils';
 import styles from './TaskCard.module.css';
@@ -7,6 +7,7 @@ import styles from './TaskCard.module.css';
 interface Props {
   task: Task;
   onEdit: (task: Task) => void;
+  onToggleSubtask?: (task: Task, subtaskId: string) => void;
 }
 
 function notchClass(task: Task): string {
@@ -16,7 +17,7 @@ function notchClass(task: Task): string {
   return styles.notchNone;
 }
 
-export function TaskCard({ task, onEdit }: Props) {
+export function TaskCard({ task, onEdit, onToggleSubtask }: Props) {
   const handleDragStart = (e: DragEvent<HTMLElement>) => {
     e.dataTransfer.setData('text/plain', task.id ?? '');
     e.dataTransfer.effectAllowed = 'move';
@@ -40,6 +41,30 @@ export function TaskCard({ task, onEdit }: Props) {
         {task.description ? (
           <p className={`${styles.meta} ${styles.desc}`}>{task.description}</p>
         ) : null}
+
+        {task.subtasks.length > 0 ? (
+          <ul className={styles.subtaskList}>
+            {task.subtasks.map((s) => (
+              <li key={s.id} className={styles.subtaskItem}>
+                <label
+                  className={styles.subtaskLabel}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="checkbox"
+                    className={styles.subtaskCheckbox}
+                    checked={s.completed}
+                    onChange={() => onToggleSubtask?.(task, s.id)}
+                  />
+                  <span className={s.completed ? styles.subtaskTitleDone : styles.subtaskTitle}>
+                    {s.title}
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
         <div className={styles.footer}>
           {task.relatedTo ? <span className={styles.entity}>{task.relatedTo}</span> : null}
           {task.dueDate ? (
@@ -50,7 +75,6 @@ export function TaskCard({ task, onEdit }: Props) {
           ) : null}
           {task.subtasks.length > 0 ? (
             <span className={`${styles.meta} ${styles.subtasks}`}>
-              <CheckSquare size={12} strokeWidth={2} aria-hidden="true" />
               {task.subtasks.filter((s) => s.completed).length}/{task.subtasks.length}
             </span>
           ) : null}

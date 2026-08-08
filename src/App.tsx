@@ -113,6 +113,14 @@ export default function App() {
     await updateTask(taskId, { status });
   };
 
+  const toggleSubtask = async (task: Task, subtaskId: string) => {
+    if (!task.id) return;
+    const subtasks = task.subtasks.map((s) =>
+      s.id === subtaskId ? { ...s, completed: !s.completed } : s,
+    );
+    await updateTask(task.id, { subtasks });
+  };
+
   const reviewComplete = async (ids: string[]) => {
     for (const id of ids) await updateTask(id, { status: 'done' });
     setReviewOpen(false);
@@ -157,6 +165,7 @@ export default function App() {
           <MatrixView
             tasks={filtered}
             onEdit={openEdit}
+            onToggleSubtask={toggleSubtask}
             onQuickAdd={(urgent, important) =>
               openPreset({ urgent, important, status: 'todo' })
             }
@@ -166,6 +175,7 @@ export default function App() {
           <WeekView
             tasks={filtered}
             onEdit={openEdit}
+            onToggleSubtask={toggleSubtask}
             onMoveToDay={moveToDay}
             onQuickAdd={(dateStr) =>
               openPreset({ urgent: false, important: false, status: 'todo', targetDate: dateStr })
@@ -176,6 +186,7 @@ export default function App() {
           <KanbanView
             tasks={filtered}
             onEdit={openEdit}
+            onToggleSubtask={toggleSubtask}
             onMoveToStatus={moveToStatus}
             onQuickAdd={(status) => openPreset({ urgent: false, important: false, status })}
           />
