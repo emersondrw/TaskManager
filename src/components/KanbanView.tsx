@@ -1,6 +1,6 @@
 import { useState, type DragEvent } from 'react';
 import { Plus } from 'lucide-react';
-import type { KanbanStatus, Task } from '../types/task';
+import type { KanbanStatus, Subtask, Task } from '../types/task';
 import { TaskCard } from './TaskCard';
 import styles from './KanbanView.module.css';
 
@@ -8,6 +8,7 @@ interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onToggleSubtask: (task: Task, subtaskId: string) => void;
+  onEditSubtask: (task: Task, subtask: Subtask) => void;
   onMoveToStatus: (taskId: string, status: KanbanStatus) => void;
   onQuickAdd: (status: KanbanStatus) => void;
 }
@@ -18,7 +19,14 @@ const COLUMNS: { status: KanbanStatus; label: string }[] = [
   { status: 'done', label: 'Hecho' },
 ];
 
-export function KanbanView({ tasks, onEdit, onToggleSubtask, onMoveToStatus, onQuickAdd }: Props) {
+export function KanbanView({
+  tasks,
+  onEdit,
+  onToggleSubtask,
+  onEditSubtask,
+  onMoveToStatus,
+  onQuickAdd,
+}: Props) {
   const [over, setOver] = useState<KanbanStatus | null>(null);
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, status: KanbanStatus) => {
@@ -67,6 +75,7 @@ export function KanbanView({ tasks, onEdit, onToggleSubtask, onMoveToStatus, onQ
                       task={t}
                       onEdit={onEdit}
                       onToggleSubtask={onToggleSubtask}
+                      onEditSubtask={onEditSubtask}
                     />
                   ))
                 ) : (

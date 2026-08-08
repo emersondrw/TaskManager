@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import type { Quadrant, Task } from '../types/task';
+import type { Quadrant, Subtask, Task } from '../types/task';
 import { QUADRANT_LABEL, quadrantOf } from '../types/task';
 import { TaskCard } from './TaskCard';
 import { formatShort, todayStr } from '../utils/dateUtils';
@@ -9,6 +9,7 @@ interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onToggleSubtask: (task: Task, subtaskId: string) => void;
+  onEditSubtask: (task: Task, subtask: Subtask) => void;
   onQuickAdd: (urgent: boolean, important: boolean) => void;
 }
 
@@ -19,7 +20,7 @@ const QUADRANTS: { key: Quadrant; urgent: boolean; important: boolean }[] = [
   { key: 'C4', urgent: false, important: false },
 ];
 
-export function MatrixView({ tasks, onEdit, onToggleSubtask, onQuickAdd }: Props) {
+export function MatrixView({ tasks, onEdit, onToggleSubtask, onEditSubtask, onQuickAdd }: Props) {
   const today = todayStr();
   const todayTasks = tasks.filter((t) => t.targetDate === today);
 
@@ -79,6 +80,7 @@ export function MatrixView({ tasks, onEdit, onToggleSubtask, onQuickAdd }: Props
                       task={t}
                       onEdit={onEdit}
                       onToggleSubtask={onToggleSubtask}
+                      onEditSubtask={onEditSubtask}
                     />
                   ))
                 ) : (

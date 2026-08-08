@@ -4,7 +4,7 @@ import { addTask, db, deleteTask, updateTask, type TaskInput } from './db/dexieD
 import { exportToJson, importFromJson } from './db/backupService';
 import { useNotifications } from './hooks/useNotifications';
 import { usePersistentStorage } from './hooks/usePersistentStorage';
-import type { KanbanStatus, Task, TaskView } from './types/task';
+import type { KanbanStatus, Subtask, Task, TaskView } from './types/task';
 import { isPast } from './utils/dateUtils';
 import { Header } from './components/Header';
 import { MatrixView } from './components/MatrixView';
@@ -22,6 +22,10 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const [preset, setPreset] = useState<TaskPreset | undefined>(undefined);
+  const [editingSubtask, setEditingSubtask] = useState<{
+    task: Task;
+    subtask: Subtask;
+  } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [toast, setToast] = useState('');
   const reviewedRef = useRef(false);
@@ -66,19 +70,36 @@ export default function App() {
   const openNew = () => {
     setEditing(null);
     setPreset(undefined);
+    setEditingSubtask(null);
     setModalOpen(true);
   };
 
   const openPreset = (p: TaskPreset) => {
     setEditing(null);
     setPreset(p);
+    setEditingSubtask(null);
     setModalOpen(true);
   };
 
   const openEdit = (task: Task) => {
     setEditing(task);
     setPreset(undefined);
+    setEditingSubtask(null);
     setModalOpen(true);
+  };
+
+  const openSubtaskEdit = (task: Task, subtask: Subtask) => {
+    setEditing(null);
+    setPreset(undefined);
+    setEditingSubtask({ task, subtask });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditing(null);
+    setPreset(undefined);
+    setEditingSubtask(null);
   };
 
   const handleSave = async (input: TaskInput) => {
@@ -92,16 +113,21 @@ export default function App() {
       await addTask(input);
       notify('Tarea creada.');
     }
-    setModalOpen(false);
-    setEditing(null);
-    setPreset(undefined);
+    closeModal();
+  };
+
+  const handleSaveSubtask = async (task: Task, updated: Subtask) => {
+    if (!task.id) return;
+    const subtasks = task.subtasks.map((s) => (s.id === updated.id ? updated : s));
+    await updateTask(task.id, { subtasks });
+    closeModal();
+    notify('Subtarea actualizada.');
   };
 
   const handleDelete = async (task: Task) => {
     if (!task.id) return;
     await deleteTask(task.id);
-    setModalOpen(false);
-    setEditing(null);
+    closeModal();
     notify('Tarea eliminada.');
   };
 
@@ -166,6 +192,7 @@ export default function App() {
             tasks={filtered}
             onEdit={openEdit}
             onToggleSubtask={toggleSubtask}
+            onEditSubtask={openSubtaskEdit}
             onQuickAdd={(urgent, important) =>
               openPreset({ urgent, important, status: 'todo' })
             }
@@ -176,6 +203,7 @@ export default function App() {
             tasks={filtered}
             onEdit={openEdit}
             onToggleSubtask={toggleSubtask}
+            onEditSubtask={openSubtaskEdit}
             onMoveToDay={moveToDay}
             onQuickAdd={(dateStr) =>
               openPreset({ urgent: false, important: false, status: 'todo', targetDate: dateStr })
@@ -187,6 +215,7 @@ export default function App() {
             tasks={filtered}
             onEdit={openEdit}
             onToggleSubtask={toggleSubtask}
+            onEditSubtask={openSubtaskEdit}
             onMoveToStatus={moveToStatus}
             onQuickAdd={(status) => openPreset({ urgent: false, important: false, status })}
           />
@@ -197,13 +226,11 @@ export default function App() {
         open={modalOpen}
         initial={editing}
         preset={preset}
+        subtaskContext={editingSubtask}
         entities={entities}
-        onClose={() => {
-          setModalOpen(false);
-          setEditing(null);
-          setPreset(undefined);
-        }}
+        onClose={closeModal}
         onSave={handleSave}
+        onSaveSubtask={handleSaveSubtask}
         onDelete={handleDelete}
       />
 

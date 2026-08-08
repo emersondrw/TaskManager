@@ -105,6 +105,9 @@
 }
 
 .subtaskItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -114,6 +117,7 @@
   gap: 7px;
   cursor: pointer;
   min-width: 0;
+  flex: 0 1 auto;
 }
 
 .subtaskCheckbox {
@@ -129,6 +133,9 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
   color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subtaskTitleDone {
@@ -137,6 +144,51 @@
   overflow-wrap: anywhere;
   color: var(--steel);
   text-decoration: line-through;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtaskMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--steel);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.subtaskEdit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--steel);
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .subtaskEdit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .subtaskEdit {
+    opacity: 1;
+  }
+}
+
+.subtaskEdit:hover {
+  color: var(--ink);
+  background: var(--paper);
 }
 
 .entity {

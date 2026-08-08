@@ -1,6 +1,6 @@
 import { useState, type DragEvent } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import type { Task } from '../types/task';
+import type { Subtask, Task } from '../types/task';
 import { TaskCard } from './TaskCard';
 import {
   addDays,
@@ -19,11 +19,19 @@ interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onToggleSubtask: (task: Task, subtaskId: string) => void;
+  onEditSubtask: (task: Task, subtask: Subtask) => void;
   onMoveToDay: (taskId: string, dateStr: string) => void;
   onQuickAdd: (dateStr: string) => void;
 }
 
-export function WeekView({ tasks, onEdit, onToggleSubtask, onMoveToDay, onQuickAdd }: Props) {
+export function WeekView({
+  tasks,
+  onEdit,
+  onToggleSubtask,
+  onEditSubtask,
+  onMoveToDay,
+  onQuickAdd,
+}: Props) {
   const today = todayStr();
   const [weekOffset, setWeekOffset] = useState(0);
   const [over, setOver] = useState<string | null>(null);
@@ -122,6 +130,7 @@ export function WeekView({ tasks, onEdit, onToggleSubtask, onMoveToDay, onQuickA
                     task={t}
                     onEdit={onEdit}
                     onToggleSubtask={onToggleSubtask}
+                    onEditSubtask={onEditSubtask}
                   />
                 ))}
               </div>

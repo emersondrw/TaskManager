@@ -8,6 +8,18 @@ export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
+  details?: string; // Descripción / detalles
+  notes?: string; // Notas libres de seguimiento
+  assignee?: string; // Responsable
+  targetDate?: string; // YYYY-MM-DD
+  dueDate?: string; // ISO String para aviso local
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export function createSubtask(title: string): Subtask {
+  const now = new Date().toISOString();
+  return { id: crypto.randomUUID(), title, completed: false, createdAt: now, updatedAt: now };
 }
 
 export interface Task {

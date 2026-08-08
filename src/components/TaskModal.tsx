@@ -14,13 +14,20 @@ export interface TaskPreset {
   targetDate?: string;
 }
 
+export interface SubtaskContext {
+  task: Task;
+  subtask: Subtask;
+}
+
 interface Props {
   open: boolean;
   initial: Task | null;
   preset?: TaskPreset;
+  subtaskContext?: SubtaskContext | null;
   entities: string[];
   onClose: () => void;
   onSave: (input: TaskInput) => void;
+  onSaveSubtask?: (task: Task, subtask: Subtask) => void;
   onDelete?: (task: Task) => void;
 }
 
@@ -30,7 +37,17 @@ const STATUS_OPTIONS: { value: KanbanStatus; label: string }[] = [
   { value: 'done', label: 'Hecho' },
 ];
 
-export function TaskModal({ open, initial, preset, entities, onClose, onSave, onDelete }: Props) {
+export function TaskModal({
+  open,
+  initial,
+  preset,
+  subtaskContext,
+  entities,
+  onClose,
+  onSave,
+  onSaveSubtask,
+  onDelete,
+}: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [relatedTo, setRelatedTo] = useState('');
@@ -41,6 +58,14 @@ export function TaskModal({ open, initial, preset, entities, onClose, onSave, on
   const [dueDate, setDueDate] = useState('');
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [error, setError] = useState('');
+
+  const [sTitle, setSTitle] = useState('');
+  const [sAssignee, setSAssignee] = useState('');
+  const [sDetails, setSDetails] = useState('');
+  const [sNotes, setSNotes] = useState('');
+  const [sTargetDate, setSTargetDate] = useState(todayStr());
+  const [sDueDate, setSDueDate] = useState('');
+  const [sError, setSError] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -56,9 +81,23 @@ export function TaskModal({ open, initial, preset, entities, onClose, onSave, on
     setError('');
   }, [open, initial, preset]);
 
+  useEffect(() => {
+    if (!open || !subtaskContext) return;
+    const s = subtaskContext.subtask;
+    setSTitle(s.title);
+    setSAssignee(s.assignee ?? '');
+    setSDetails(s.details ?? '');
+    setSNotes(s.notes ?? '');
+    setSTargetDate(s.targetDate ?? todayStr());
+    setSDueDate(s.dueDate ? isoToLocalDateTime(s.dueDate) : '');
+    setSError('');
+  }, [open, subtaskContext]);
+
   const quadrant = useMemo(() => quadrantOf({ urgent, important }), [urgent, important]);
 
   if (!open) return null;
+
+  const isSubtask = Boolean(subtaskContext);
 
   const submit = () => {
     const trimmed = title.trim();
@@ -80,17 +119,114 @@ export function TaskModal({ open, initial, preset, entities, onClose, onSave, on
     onSave(payload);
   };
 
+  const submitSubtask = () => {
+    const trimmed = sTitle.trim();
+    if (!trimmed) {
+      setSError('Ponle un título a la subtarea.');
+      return;
+    }
+    if (!subtaskContext) return;
+    const updated: Subtask = {
+      ...subtaskContext.subtask,
+      title: trimmed,
+      assignee: sAssignee.trim() || undefined,
+      details: sDetails.trim() || undefined,
+      notes: sNotes.trim() || undefined,
+      targetDate: sTargetDate,
+      dueDate: sDueDate ? localDateTimeToISO(sDueDate) : undefined,
+      updatedAt: new Date().toISOString(),
+    };
+    onSaveSubtask?.(subtaskContext.task, updated);
+  };
+
   return (
     <div className={styles.overlay} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.panel} role="dialog" aria-modal="true" aria-label="Tarea">
         <header className={styles.panelHead}>
-          <span className="eyebrow">{initial ? 'Editar tarea' : 'Nueva tarea'}</span>
+          <span className="eyebrow">
+            {isSubtask ? 'Editar subtarea' : initial ? 'Editar tarea' : 'Nueva tarea'}
+          </span>
           <button className={styles.close} onClick={onClose} aria-label="Cerrar">
             <X size={16} strokeWidth={2} />
           </button>
         </header>
 
-        <div className={styles.body}>
+        {isSubtask ? (
+          <div className={styles.body}>
+            <label className={styles.field}>
+              <span className="eyebrow">Título</span>
+              <input
+                className={styles.input}
+                value={sTitle}
+                onChange={(e) => setSTitle(e.target.value)}
+                placeholder="¿Qué hay que hacer?"
+                autoFocus
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className="eyebrow">Responsable</span>
+              <input
+                className={styles.input}
+                value={sAssignee}
+                onChange={(e) => setSAssignee(e.target.value)}
+                list="subtask-assignees"
+                placeholder="¿Quién la hace?"
+              />
+              <datalist id="subtask-assignees">
+                {entities.map((e) => (
+                  <option key={e} value={e} />
+                ))}
+              </datalist>
+            </label>
+
+            <div className={styles.row}>
+              <label className={styles.field}>
+                <span className="eyebrow">Fecha objetivo</span>
+                <input
+                  type="date"
+                  className={styles.input}
+                  value={sTargetDate}
+                  onChange={(e) => setSTargetDate(e.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span className="eyebrow">Aviso local (opcional)</span>
+                <input
+                  type="datetime-local"
+                  className={styles.input}
+                  value={sDueDate}
+                  onChange={(e) => setSDueDate(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <label className={styles.field}>
+              <span className="eyebrow">Detalles</span>
+              <textarea
+                className={`${styles.input} ${styles.textarea}`}
+                value={sDetails}
+                onChange={(e) => setSDetails(e.target.value)}
+                rows={3}
+                placeholder="Qué incluye, criterio de terminado…"
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span className="eyebrow">Notas</span>
+              <textarea
+                className={`${styles.input} ${styles.textarea}`}
+                value={sNotes}
+                onChange={(e) => setSNotes(e.target.value)}
+                rows={3}
+                placeholder="Observaciones de seguimiento…"
+              />
+            </label>
+
+            {sError ? <p className={styles.error}>{sError}</p> : null}
+          </div>
+        ) : (
+          <div className={styles.body}>
           <label className={styles.field}>
             <span className="eyebrow">Título</span>
             <input
@@ -193,13 +329,14 @@ export function TaskModal({ open, initial, preset, entities, onClose, onSave, on
             />
           </label>
 
-          <SubtaskManager subtasks={subtasks} onChange={setSubtasks} />
+          <SubtaskManager subtasks={subtasks} onChange={setSubtasks} entities={entities} />
 
           {error ? <p className={styles.error}>{error}</p> : null}
-        </div>
+          </div>
+        )}
 
         <footer className={styles.panelFoot}>
-          {onDelete && initial ? (
+          {!isSubtask && onDelete && initial ? (
             <button
               type="button"
               className={styles.delete}
@@ -215,8 +352,8 @@ export function TaskModal({ open, initial, preset, entities, onClose, onSave, on
             <button type="button" className={styles.cancel} onClick={onClose}>
               Cancelar
             </button>
-            <button type="button" className={styles.save} onClick={submit}>
-              {initial ? 'Guardar cambios' : 'Crear tarea'}
+            <button type="button" className={styles.save} onClick={isSubtask ? submitSubtask : submit}>
+              {isSubtask ? 'Guardar cambios' : initial ? 'Guardar cambios' : 'Crear tarea'}
             </button>
           </div>
         </footer>

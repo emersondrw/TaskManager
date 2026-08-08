@@ -1,13 +1,14 @@
 import type { DragEvent } from 'react';
-import { Timer } from 'lucide-react';
-import type { Task } from '../types/task';
-import { formatTime } from '../utils/dateUtils';
+import { Pencil, Timer } from 'lucide-react';
+import type { Subtask, Task } from '../types/task';
+import { formatShort, formatTime } from '../utils/dateUtils';
 import styles from './TaskCard.module.css';
 
 interface Props {
   task: Task;
   onEdit: (task: Task) => void;
   onToggleSubtask?: (task: Task, subtaskId: string) => void;
+  onEditSubtask?: (task: Task, subtask: Subtask) => void;
 }
 
 function notchClass(task: Task): string {
@@ -17,7 +18,7 @@ function notchClass(task: Task): string {
   return styles.notchNone;
 }
 
-export function TaskCard({ task, onEdit, onToggleSubtask }: Props) {
+export function TaskCard({ task, onEdit, onToggleSubtask, onEditSubtask }: Props) {
   const handleDragStart = (e: DragEvent<HTMLElement>) => {
     e.dataTransfer.setData('text/plain', task.id ?? '');
     e.dataTransfer.effectAllowed = 'move';
@@ -60,6 +61,24 @@ export function TaskCard({ task, onEdit, onToggleSubtask }: Props) {
                     {s.title}
                   </span>
                 </label>
+                {s.assignee || s.targetDate ? (
+                  <span className={styles.subtaskMeta}>
+                    {[s.assignee, s.targetDate ? formatShort(s.targetDate) : '']
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  className={styles.subtaskEdit}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditSubtask?.(task, s);
+                  }}
+                  aria-label={`Editar subtarea: ${s.title}`}
+                >
+                  <Pencil size={11} strokeWidth={2} />
+                </button>
               </li>
             ))}
           </ul>
