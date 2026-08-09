@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/dexieDB';
+import type { Task } from '../types/task';
 
 const RELEASE_INTERVAL = 15000; // revisar cada 15 s para no retrasar el aviso
 const NOTIFIED_KEY = 'taskmanager-notified-';
@@ -22,7 +23,7 @@ export type NotificationPermissionState = NotificationPermission | 'unsupported'
  * Devuelve el estado del permiso para que la UI pueda mostrar un indicador
  * (activar / bloqueado) y un `request` para pedirlo ante un gesto del usuario.
  */
-export function useNotifications(): {
+export function useNotifications(onDue?: (task: Task) => void): {
   permission: NotificationPermissionState;
   request: () => void;
 } {
@@ -31,6 +32,8 @@ export function useNotifications(): {
   const [permission, setPermission] = useState<NotificationPermissionState>(() =>
     'Notification' in window ? Notification.permission : 'unsupported',
   );
+  const onDueRef = useRef(onDue);
+  onDueRef.current = onDue;
 
   useEffect(() => {
     if (!('Notification' in window)) {
@@ -90,6 +93,7 @@ export function useNotifications(): {
       showNotification(task.title, task.description || 'La hora programada ha llegado.');
       localStorage.setItem(NOTIFIED_KEY + task.id + '-' + task.dueDate, '1');
       void db.tasks.update(task.id, { notified: true, updatedAt: new Date().toISOString() });
+      onDueRef.current?.(task);
     }
   }, [tasks, tick]);
 

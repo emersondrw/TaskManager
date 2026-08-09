@@ -5,7 +5,7 @@ import { exportToJson, importFromJson } from './db/backupService';
 import { useNotifications } from './hooks/useNotifications';
 import { usePersistentStorage } from './hooks/usePersistentStorage';
 import type { KanbanStatus, Subtask, Task, TaskView } from './types/task';
-import { isPast } from './utils/dateUtils';
+import { formatTime, isPast } from './utils/dateUtils';
 import { Header } from './components/Header';
 import { MatrixView } from './components/MatrixView';
 import { WeekView } from './components/WeekView';
@@ -28,11 +28,19 @@ export default function App() {
   } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [toast, setToast] = useState('');
+  const [dueBanner, setDueBanner] = useState<{ title: string; time?: string } | null>(null);
   const reviewedRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const dueBannerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   usePersistentStorage();
-  const { permission: notifPermission, request: requestNotifications } = useNotifications();
+  const { permission: notifPermission, request: requestNotifications } = useNotifications(
+    (task) => {
+      setDueBanner({ title: task.title, time: task.dueDate });
+      if (dueBannerTimer.current) clearTimeout(dueBannerTimer.current);
+      dueBannerTimer.current = setTimeout(() => setDueBanner(null), 8000);
+    },
+  );
 
   const tasks = useLiveQuery(() => db.tasks.toArray(), [], []);
 
@@ -247,6 +255,24 @@ export default function App() {
       {toast ? (
         <div className={styles.toast} role="status">
           {toast}
+        </div>
+      ) : null}
+
+      {dueBanner ? (
+        <div className={styles.dueBanner} role="alert">
+          <span className={styles.dueBannerLabel}>Aviso · Hora programada</span>
+          <span className={styles.dueBannerTitle}>{dueBanner.title}</span>
+          {dueBanner.time ? (
+            <span className={styles.dueBannerTime}>{formatTime(dueBanner.time)}</span>
+          ) : null}
+          <button
+            type="button"
+            className={styles.dueBannerClose}
+            onClick={() => setDueBanner(null)}
+            aria-label="Cerrar aviso"
+          >
+            ×
+          </button>
         </div>
       ) : null}
     </div>
