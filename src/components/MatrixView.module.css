@@ -118,24 +118,6 @@
   z-index: 4;
 }
 
-.axisLabelX {
-  position: absolute;
-  left: 22px;
-  top: calc(50% + 12px);
-  z-index: 4;
-  color: var(--steel);
-}
-
-.axisLabelY {
-  position: absolute;
-  top: 16px;
-  left: calc(50% + 12px);
-  z-index: 4;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  color: var(--steel);
-}
-
 .quad {
   position: relative;
   display: flex;
@@ -251,9 +233,5 @@
 
   .quadName {
     display: none;
-  }
-
-  .axisLabelX {
-    left: 10px;
   }
 }

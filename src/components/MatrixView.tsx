@@ -49,8 +49,6 @@ export function MatrixView({ tasks, onEdit, onToggleSubtask, onEditSubtask, onQu
         <span className={styles.axisX} aria-hidden="true" />
         <span className={styles.axisY} aria-hidden="true" />
         <span className={styles.center} aria-hidden="true" />
-        <span className={`eyebrow ${styles.axisLabelX}`}>Importante →</span>
-        <span className={`eyebrow ${styles.axisLabelY}`}>Urgente</span>
 
         {QUADRANTS.map((q) => {
           const list = group(q.key);
