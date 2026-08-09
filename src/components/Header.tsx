@@ -1,6 +1,7 @@
 import { useRef } from 'react';
-import { Download, Plus, Upload } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload } from 'lucide-react';
 import type { TaskView } from '../types/task';
+import type { NotificationPermissionState } from '../hooks/useNotifications';
 import styles from './Header.module.css';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   onExport: () => void;
   onImport: (file: File) => void;
   onNewTask: () => void;
+  notifPermission: NotificationPermissionState;
+  onRequestNotifications: () => void;
 }
 
 const VIEWS: { key: TaskView; label: string }[] = [
@@ -29,6 +32,8 @@ export function Header({
   onExport,
   onImport,
   onNewTask,
+  notifPermission,
+  onRequestNotifications,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -107,6 +112,33 @@ export function Header({
             e.target.value = '';
           }}
         />
+
+        {notifPermission === 'granted' ? (
+          <span className={styles.notifBadge} title="Avisos de tareas activados">
+            <Bell size={14} strokeWidth={2} />
+            <span className={styles.notifText}>Avisos</span>
+          </span>
+        ) : null}
+        {notifPermission === 'default' ? (
+          <button
+            type="button"
+            className={styles.notifButton}
+            onClick={onRequestNotifications}
+            title="Permite que la app te avise cuando llega la hora de una tarea"
+          >
+            <Bell size={14} strokeWidth={2} />
+            <span className={styles.notifText}>Activar avisos</span>
+          </button>
+        ) : null}
+        {notifPermission === 'denied' ? (
+          <span
+            className={`${styles.notifButton} ${styles.notifDenied}`}
+            title="Notificaciones bloqueadas: actívalas en los ajustes del navegador"
+          >
+            <BellOff size={14} strokeWidth={2} />
+            <span className={styles.notifText}>Avisos bloqueados</span>
+          </span>
+        ) : null}
 
         <button type="button" className={styles.primary} onClick={onNewTask}>
           <Plus size={15} strokeWidth={2.2} />

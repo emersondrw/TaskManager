@@ -5,6 +5,8 @@ import { db } from '../db/dexieDB';
 const RELEASE_INTERVAL = 15000; // revisar cada 15 s para no retrasar el aviso
 const NOTIFIED_KEY = 'taskmanager-notified-';
 
+export type NotificationPermissionState = NotificationPermission | 'unsupported';
+
 /**
  * Notificaciones locales vía la Notification API (no hay librería externa).
  *
@@ -16,13 +18,25 @@ const NOTIFIED_KEY = 'taskmanager-notified-';
  * y con `new Notification()` como respaldo mientras la pestaña está abierta.
  * La clave de deduplicación incluye el `dueDate` para que reprogramar una
  * tarea dispare un nuevo aviso en la nueva hora.
+ *
+ * Devuelve el estado del permiso para que la UI pueda mostrar un indicador
+ * (activar / bloqueado) y un `request` para pedirlo ante un gesto del usuario.
  */
-export function useNotifications(): void {
+export function useNotifications(): {
+  permission: NotificationPermissionState;
+  request: () => void;
+} {
   const [tick, setTick] = useState(0);
   const tasks = useLiveQuery(() => db.tasks.toArray(), []);
+  const [permission, setPermission] = useState<NotificationPermissionState>(() =>
+    'Notification' in window ? Notification.permission : 'unsupported',
+  );
 
   useEffect(() => {
-    if (!('Notification' in window)) return;
+    if (!('Notification' in window)) {
+      setPermission('unsupported');
+      return;
+    }
     void requestPermission();
     const onGesture = () => {
       void requestPermission();
@@ -48,6 +62,21 @@ export function useNotifications(): void {
     };
   }, []);
 
+  // No hay evento estándar de cambio de permiso: se sincroniza en cada revisión.
+  useEffect(() => {
+    if (!('Notification' in window)) return;
+    setPermission(Notification.permission);
+  }, [tick]);
+
+  const request = () => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      void Notification.requestPermission().then(setPermission);
+    } else {
+      setPermission(Notification.permission);
+    }
+  };
+
   useEffect(() => {
     if (!tasks || !('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
@@ -63,6 +92,8 @@ export function useNotifications(): void {
       void db.tasks.update(task.id, { notified: true, updatedAt: new Date().toISOString() });
     }
   }, [tasks, tick]);
+
+  return { permission, request };
 }
 
 function requestPermission(): void {

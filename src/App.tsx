@@ -32,7 +32,7 @@ export default function App() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   usePersistentStorage();
-  useNotifications();
+  const { permission: notifPermission, request: requestNotifications } = useNotifications();
 
   const tasks = useLiveQuery(() => db.tasks.toArray(), [], []);
 
@@ -184,6 +184,8 @@ export default function App() {
         onExport={handleExport}
         onImport={handleImport}
         onNewTask={openNew}
+        notifPermission={notifPermission}
+        onRequestNotifications={requestNotifications}
       />
 
       <main className={styles.main}>
